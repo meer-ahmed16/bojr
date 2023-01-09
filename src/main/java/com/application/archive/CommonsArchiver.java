@@ -39,9 +39,13 @@ class CommonsArchiver implements Archiver {
     }
 
     @Override
-    public File create(String archive, File destination, File... sources) throws IOException {
+    public File create(String archive, File destination, File... sources) throws IOException, IllegalArgumentException {
 
         IOUtils.requireDirectory(destination);
+
+        if (!destination.canWrite()) {
+            throw new IllegalArgumentException("Can not write to destination " + destination);
+        }
 
         File archiveFile = createNewArchiveFile(archive, getFilenameExtension(), destination);
 
@@ -89,6 +93,9 @@ class CommonsArchiver implements Archiver {
 
             if (!entry.isDirectory()) {
                 IOUtils.copy(input, file);
+            } else {
+                // Directory needs to created if it doesn't exist
+                IOUtils.requireDirectory(file);
             }
 
             FileModeMapper.map(entry, file);
